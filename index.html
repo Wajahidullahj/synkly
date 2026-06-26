@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synkly — One move, every store updates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15171c;
+    --paper:#f6f3ec;
+    --coral:#ff5d3a;
+    --mint:#1f8a70;
+    --line:#dcd6c6;
+    --muted:#6b6a63;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
+  h1,h2,h3{font-family:'Fraunces', serif; font-weight:600; letter-spacing:-0.01em;}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(246,243,236,0.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{display:flex; align-items:center; justify-content:space-between; height:72px;}
+  .logo{display:flex; align-items:center; gap:10px; font-family:'Fraunces',serif; font-weight:700; font-size:22px;}
+  .logo-mark{width:28px; height:28px; position:relative;}
+  .logo-mark span{
+    position:absolute; width:14px; height:14px; border-radius:50%;
+  }
+  .logo-mark span:first-child{background:var(--coral); top:0; left:0;}
+  .logo-mark span:last-child{background:var(--mint); bottom:0; right:0;}
+  .nav-links{display:flex; gap:36px; font-size:15px; color:var(--ink);}
+  .nav-links a{color:var(--muted); text-decoration:none; transition:color .2s;}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-cta{display:flex; gap:16px; align-items:center;}
+  .btn{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;
+    padding:11px 22px; border-radius:999px; border:1.5px solid var(--ink);
+    text-decoration:none; color:var(--ink); display:inline-block; transition:all .2s;
+  }
+  .btn-solid{background:var(--ink); color:var(--paper);}
+  .btn-solid:hover{background:var(--coral); border-color:var(--coral);}
+  .btn:not(.btn-solid):hover{background:var(--ink); color:var(--paper);}
+  .link-quiet{color:var(--muted); text-decoration:none; font-size:14px;}
+
+  /* ---------- HERO ---------- */
+  .hero{padding:96px 0 80px; position:relative; overflow:hidden;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.06em;
+    color:var(--mint); text-transform:uppercase; margin-bottom:28px;
+  }
+  .eyebrow::before{content:''; width:8px; height:8px; border-radius:50%; background:var(--mint); animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.3;}}
+  .hero h1{
+    font-size:clamp(38px, 6vw, 72px); line-height:1.04; max-width:880px;
+  }
+  .hero h1 em{font-style:italic; color:var(--coral);}
+  .hero p{
+    font-size:19px; color:var(--muted); max-width:560px; margin-top:24px; line-height:1.55;
+  }
+  .hero-ctas{display:flex; gap:16px; margin-top:40px; align-items:center; flex-wrap:wrap;}
+
+  /* ---------- MIRROR SYNC VISUAL (signature element) ---------- */
+  .mirror-stage{
+    margin-top:72px; border:1.5px solid var(--ink); border-radius:18px;
+    overflow:hidden; background:#fff;
+  }
+  .mirror-grid{display:grid; grid-template-columns:1fr auto 1fr;}
+  .mirror-panel{padding:32px 28px;}
+  .mirror-panel.store{border-right:1px dashed var(--line);}
+  .panel-label{
+    font-family:'JetBrains Mono', monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:0.08em; color:var(--muted); margin-bottom:16px; display:block;
+  }
+  .product-row{
+    display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .product-row:last-child{border-bottom:none;}
+  .swatch{width:34px; height:34px; border-radius:8px; flex-shrink:0;}
+  .product-name{font-weight:600; flex:1;}
+  .stock-pill{
+    font-family:'JetBrains Mono', monospace; font-size:11px; padding:3px 9px; border-radius:999px;
+    background:#eef6f0; color:var(--mint); font-weight:500;
+  }
+  .sync-spine{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:0 18px; gap:10px; background:repeating-linear-gradient(180deg, transparent 0 6px, var(--line) 6px 7px);
+  }
+  .sync-spine .pulse-dot{
+    width:10px; height:10px; border-radius:50%; background:var(--coral);
+    box-shadow:0 0 0 6px rgba(255,93,58,0.12);
+  }
+
+  /* ---------- LOGOS / STATS STRIP ---------- */
+  .stats-strip{
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:36px 0; background:#fff;
+  }
+  .stats-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:24px; text-align:center;}
+  .stat-num{font-family:'Fraunces',serif; font-size:38px; font-weight:600;}
+  .stat-label{font-size:13px; color:var(--muted); margin-top:4px;}
+
+  /* ---------- FEATURES ---------- */
+  .section{padding:104px 0;}
+  .section-head{max-width:620px; margin-bottom:56px;}
+  .section-tag{
+    font-family:'JetBrains Mono', monospace; font-size:12px; text-transform:uppercase;
+    letter-spacing:0.06em; color:var(--coral); margin-bottom:14px; display:block;
+  }
+  .section-head h2{font-size:clamp(28px,4vw,42px); line-height:1.1;}
+
+  .feature-list{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:16px; overflow:hidden;}
+  .feature-cell{background:var(--paper); padding:34px 28px;}
+  .feature-num{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); margin-bottom:18px; display:block;}
+  .feature-cell h3{font-size:19px; margin-bottom:10px; font-family:'Space Grotesk',sans-serif; font-weight:600;}
+  .feature-cell p{font-size:14.5px; color:var(--muted); line-height:1.6;}
+
+  /* ---------- HOW IT WORKS ---------- */
+  .flow{display:flex; align-items:stretch; gap:0; border:1px solid var(--ink); border-radius:16px; overflow:hidden;}
+  .flow-step{flex:1; padding:36px 26px; border-right:1px dashed var(--line); position:relative;}
+  .flow-step:last-child{border-right:none;}
+  .flow-step .step-tag{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--coral); display:block; margin-bottom:14px;}
+  .flow-step h3{font-size:17px; margin-bottom:8px; font-weight:600; font-family:'Space Grotesk',sans-serif;}
+  .flow-step p{font-size:13.5px; color:var(--muted); line-height:1.55;}
+
+  /* ---------- PRICING ---------- */
+  .pricing-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  .price-card{
+    border:1.5px solid var(--ink); border-radius:16px; padding:32px 26px; background:#fff;
+    display:flex; flex-direction:column;
+  }
+  .price-card.featured{background:var(--ink); color:var(--paper); position:relative; transform:translateY(-10px);}
+  .price-card.featured .muted{color:#a8a89f;}
+  .price-card.featured .btn-solid{background:var(--coral); border-color:var(--coral);}
+  .plan-name{font-family:'Fraunces',serif; font-size:22px; margin-bottom:6px;}
+  .plan-price{font-family:'Fraunces',serif; font-size:40px; margin:14px 0 4px;}
+  .plan-price span{font-size:15px; font-family:'Space Grotesk',sans-serif; color:var(--muted);}
+  .muted{color:var(--muted); font-size:14px;}
+  .plan-feats{list-style:none; margin:24px 0; flex:1; font-size:14px; line-height:2;}
+  .plan-feats li::before{content:'— '; color:var(--coral);}
+
+  /* ---------- FAQ ---------- */
+  .faq-item{border-bottom:1px solid var(--line);}
+  .faq-q{
+    width:100%; text-align:left; background:none; border:none; padding:22px 0;
+    font-family:'Space Grotesk',sans-serif; font-size:17px; font-weight:600; color:var(--ink);
+    display:flex; justify-content:space-between; align-items:center; cursor:pointer;
+  }
+  .faq-q .icon{font-family:'JetBrains Mono',monospace; font-size:18px; transition:transform .3s;}
+  .faq-a{max-height:0; overflow:hidden; transition:max-height .35s ease;}
+  .faq-a p{padding-bottom:22px; color:var(--muted); font-size:15px; line-height:1.6; max-width:680px;}
+  .faq-item.open .icon{transform:rotate(45deg);}
+  .faq-item.open .faq-a{max-height:200px;}
+
+  /* ---------- CTA BAND ---------- */
+  .cta-band{
+    background:var(--ink); color:var(--paper); border-radius:24px; padding:64px 48px;
+    text-align:center; margin-bottom:104px;
+  }
+  .cta-band h2{font-size:clamp(28px,4vw,44px); color:var(--paper); margin-bottom:18px;}
+  .cta-band p{color:#b9b8b0; margin-bottom:32px;}
+
+  footer{border-top:1px solid var(--line); padding:48px 0; font-size:14px; color:var(--muted);}
+  .footer-row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;}
+
+  @media (max-width:860px){
+    .nav-links{display:none;}
+    .mirror-grid{grid-template-columns:1fr;}
+    .mirror-panel.store{border-right:none; border-bottom:1px dashed var(--line);}
+    .sync-spine{flex-direction:row; padding:14px 0; background:repeating-linear-gradient(90deg, transparent 0 6px, var(--line) 6px 7px);}
+    .stats-grid{grid-template-columns:repeat(2,1fr); gap:32px;}
+    .feature-list{grid-template-columns:1fr;}
+    .flow{flex-direction:column;}
+    .flow-step{border-right:none; border-bottom:1px dashed var(--line);}
+    .pricing-grid{grid-template-columns:1fr;}
+    .price-card.featured{transform:none;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .eyebrow::before{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <div class="logo">
+      <div class="logo-mark"><span></span><span></span></div>
+      Synkly
+    </div>
+    <div class="nav-links">
+      <a href="#features">Product</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#" class="link-quiet">Log in</a>
+      <a href="#" class="btn btn-solid">Start free</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Live sync — 0.4s average</span>
+    <h1>Update one store.<br>Watch <em>every</em> store follow.</h1>
+    <p>Synkly mirrors your products, stock, and orders between your storefront and TikTok Shop, in real time, so you only ever manage inventory in one place.</p>
+    <div class="hero-ctas">
+      <a href="#" class="btn btn-solid">Connect your first store</a>
+      <a href="#how" class="btn">See how it syncs</a>
+    </div>
+
+    <!-- Signature visual: mirrored panels with a sync spine between them -->
+    <div class="mirror-stage">
+      <div class="mirror-grid">
+        <div class="mirror-panel store">
+          <span class="panel-label">Your Store</span>
+          <div class="product-row"><div class="swatch" style="background:#ffe1d6;"></div><span class="product-name">Ceramic mug — sand</span><span class="stock-pill">42 left</span></div>
+          <div class="product-row"><div class="swatch" style="background:#e3ecd9;"></div><span class="product-name">Linen tote bag</span><span class="stock-pill">18 left</span></div>
+          <div class="product-row"><div class="swatch" style="background:#fbe7a1;"></div><span class="product-name">Beeswax candle</span><span class="stock-pill">7 left</span></div>
+        </div>
+        <div class="sync-spine">
+          <div class="pulse-dot"></div>
+          <div class="pulse-dot" style="opacity:0.4;"></div>
+          <div class="pulse-dot" style="opacity:0.15;"></div>
+        </div>
+        <div class="mirror-panel">
+          <span class="panel-label">TikTok Shop</span>
+          <div class="product-row"><div class="swatch" style="background:#ffe1d6;"></div><span class="product-name">Ceramic mug — sand</span><span class="stock-pill">42 left</span></div>
+          <div class="product-row"><div class="swatch" style="background:#e3ecd9;"></div><span class="product-name">Linen tote bag</span><span class="stock-pill">18 left</span></div>
+          <div class="product-row"><div class="swatch" style="background:#fbe7a1;"></div><span class="product-name">Beeswax candle</span><span class="stock-pill">7 left</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stats-strip">
+  <div class="wrap stats-grid">
+    <div><div class="stat-num">10k+</div><div class="stat-label">stores connected</div></div>
+    <div><div class="stat-num">1.4M</div><div class="stat-label">products synced</div></div>
+    <div><div class="stat-num">99.9%</div><div class="stat-label">sync uptime</div></div>
+    <div><div class="stat-num">0.4s</div><div class="stat-label">average sync time</div></div>
+  </div>
+</div>
+
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-tag">What Synkly does</span>
+      <h2>Three jobs, handled automatically.</h2>
+    </div>
+    <div class="feature-list">
+      <div class="feature-cell">
+        <span class="feature-num">01 / Products</span>
+        <h3>List once, everywhere</h3>
+        <p>Push your catalog to TikTok Shop straight from Shopify or your store — titles, images, variants and pricing included.</p>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-num">02 / Inventory</span>
+        <h3>Stock that never drifts</h3>
+        <p>Sell a unit anywhere and every connected store reflects it within seconds — no more overselling out-of-stock items.</p>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-num">03 / Orders</span>
+        <h3>Fulfil from one inbox</h3>
+        <p>TikTok Shop orders land in your existing order system automatically, ready to pack and ship like any other sale.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how" style="padding-top:0;">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-tag">How it works</span>
+      <h2>Four steps to a mirrored store.</h2>
+    </div>
+    <div class="flow">
+      <div class="flow-step">
+        <span class="step-tag">Step 1</span>
+        <h3>Connect your store</h3>
+        <p>Link your Shopify, Amazon, or Wix account in a couple of clicks. No code required.</p>
+      </div>
+      <div class="flow-step">
+        <span class="step-tag">Step 2</span>
+        <h3>Connect TikTok Shop</h3>
+        <p>Authorize Synkly through TikTok's official seller login — your data stays yours.</p>
+      </div>
+      <div class="flow-step">
+        <span class="step-tag">Step 3</span>
+        <h3>Choose what syncs</h3>
+        <p>Pick which products, prices and stock pools should mirror across both storefronts.</p>
+      </div>
+      <div class="flow-step">
+        <span class="step-tag">Step 4</span>
+        <h3>Sit back</h3>
+        <p>Synkly watches both stores continuously and keeps them in lockstep, automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-tag">Pricing</span>
+      <h2>Start free. Grow when you need to.</h2>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="plan-name">Starter</div>
+        <p class="muted">For new sellers testing TikTok Shop.</p>
+        <div class="plan-price">$0<span>/mo</span></div>
+        <ul class="plan-feats">
+          <li>Up to 50 products</li>
+          <li>1 store connection</li>
+          <li>Daily sync</li>
+          <li>Email support</li>
+        </ul>
+        <a href="#" class="btn">Get started</a>
+      </div>
+      <div class="price-card featured">
+        <div class="plan-name">Growth</div>
+        <p class="muted">For stores scaling across platforms.</p>
+        <div class="plan-price">$49<span>/mo</span></div>
+        <ul class="plan-feats">
+          <li>Up to 5,000 products</li>
+          <li>3 store connections</li>
+          <li>Real-time sync</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#" class="btn btn-solid">Start free trial</a>
+      </div>
+      <div class="price-card">
+        <div class="plan-name">Pro</div>
+        <p class="muted">For established multi-channel brands.</p>
+        <div class="plan-price">$99<span>/mo</span></div>
+        <ul class="plan-feats">
+          <li>Unlimited products</li>
+          <li>Unlimited stores</li>
+          <li>Real-time sync</li>
+          <li>Dedicated manager</li>
+        </ul>
+        <a href="#" class="btn">Get started</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-tag">Questions</span>
+      <h2>Everything you're wondering.</h2>
+    </div>
+    <div id="faqList"></div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="cta-band">
+    <h2>Your stores, finally in sync.</h2>
+    <p>Set it up once. Synkly handles the rest.</p>
+    <a href="#" class="btn btn-solid">Start free — no card required</a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap footer-row">
+    <div class="logo" style="font-size:18px;">
+      <div class="logo-mark" style="width:22px;height:22px;"><span style="width:11px;height:11px;"></span><span style="width:11px;height:11px;"></span></div>
+      Synkly
+    </div>
+    <span>© 2026 Synkly. Built for sellers who'd rather sell than re-type inventory.</span>
+  </div>
+</footer>
+
+<script>
+  const faqs = [
+    { q: "Which platforms can I connect to TikTok Shop?", a: "Shopify, Amazon, and Wix today, with WooCommerce and BigCommerce on the roadmap." },
+    { q: "How fast does inventory actually sync?", a: "Most stock and order changes mirror across stores in under a second using real-time webhooks, with periodic polling as a safety net." },
+    { q: "Do I need to know how to code?", a: "No. Connecting a store and choosing what to sync is done entirely through the dashboard." },
+    { q: "What happens if a sync fails?", a: "You'll see it logged immediately in your dashboard with the reason, and Synkly automatically retries before alerting you." },
+    { q: "Can I cancel anytime?", a: "Yes — there are no contracts. Downgrade or cancel whenever you like, and your data stays exportable." }
+  ];
+
+  const list = document.getElementById('faqList');
+  faqs.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'faq-item';
+    item.innerHTML = `
+      <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        ${f.q} <span class="icon">+</span>
+      </button>
+      <div class="faq-a"><p>${f.a}</p></div>
+    `;
+    list.appendChild(item);
+  });
+</script>
+
+</body>
+</html>
