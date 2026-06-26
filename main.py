@@ -26,7 +26,12 @@ app = FastAPI(
 # CORS — frontend (Next.js) ko backend se baat karne ki permission deta hai
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js dev server
+    allow_origins=[
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "https://keen-horse-324a30.netlify.app",
+    "*"
+],,  # Next.js dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
