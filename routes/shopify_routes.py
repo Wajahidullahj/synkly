@@ -31,7 +31,7 @@ SHOPIFY_API_SECRET = os.getenv("SHOPIFY_API_SECRET")
 SCOPES = "read_products,write_products,read_inventory,write_inventory,read_orders,write_orders"
 
 # Yeh wahi URL hai jo humne Shopify App settings mein "Allowed redirect URL" mein daala tha
-REDIRECT_URI = "http://localhost:8000/shopify/callback"
+REDIRECT_URI = "https://synkly-production.up.railway.app/shopify/callback"
 
 
 @router.get("/install")
