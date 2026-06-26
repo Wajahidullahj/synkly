@@ -31,7 +31,7 @@ app.add_middleware(
     "http://localhost:8000",
     "https://keen-horse-324a30.netlify.app",
     "*"
-],,  # Next.js dev server
+],  # Next.js dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
