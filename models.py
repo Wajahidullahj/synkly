@@ -20,10 +20,14 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=True)  # Google se login karne walon ka password nahi hota
     full_name = Column(String, nullable=True)
     plan = Column(String, default="free")  # free, starter, growth, pro
     is_active = Column(Boolean, default=True)
+    auth_provider = Column(String, default="local")  # "local" (email/password) ya "google"
+    google_id = Column(String, unique=True, nullable=True, index=True)
+    avatar_url = Column(String, nullable=True)
+    is_email_verified = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Ek user ke multiple stores ho sakte hain (Shopify, TikTok, etc.)

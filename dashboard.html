@@ -1,266 +1,308 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Synkly — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
-
-  :root {
-    --ink: #1a1a2e;
-    --paper: #f5f0e8;
-    --coral: #e8634a;
-    --mint: #4abaab;
-    --muted: #7a7a8a;
-    --border: #ddd8ce;
-    --card: #fffdf9;
-    --success: #2ecc71;
-    --danger: #e74c3c;
+  :root{
+    --ink:#15171c;
+    --paper:#f6f3ec;
+    --panel:#ffffff;
+    --coral:#ff5d3a;
+    --mint:#1f8a70;
+    --mint-bg:#eef6f0;
+    --line:#dcd6c6;
+    --muted:#6b6a63;
+    --danger:#c44536;
   }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  .hidden{display:none !important;}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; }
+  /* ---------------- LOGIN SCREEN ---------------- */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .login-card{
+    width:100%; max-width:380px; background:var(--panel); border:1.5px solid var(--ink);
+    border-radius:16px; padding:36px 32px;
+  }
+  .login-logo{display:flex; align-items:center; gap:10px; font-family:'Fraunces',serif; font-weight:700; font-size:22px; margin-bottom:6px;}
+  .logo-mark{width:24px; height:24px; position:relative; flex-shrink:0;}
+  .logo-mark span{position:absolute; width:12px; height:12px; border-radius:50%;}
+  .logo-mark span:first-child{background:var(--coral); top:0; left:0;}
+  .logo-mark span:last-child{background:var(--mint); bottom:0; right:0;}
+  .login-card p.sub{color:var(--muted); font-size:13.5px; margin-bottom:26px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12px; font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:6px;}
+  .field input{
+    width:100%; padding:11px 12px; border:1.5px solid var(--line); border-radius:8px;
+    font-family:'Space Grotesk',sans-serif; font-size:14.5px; background:var(--paper);
+    color: var(--ink);
+  }
+  .field input:focus{outline:none; border-color:var(--ink);}
+  .btn{
+    width:100%; padding:12px; border-radius:8px; border:1.5px solid var(--ink);
+    background:var(--ink); color:var(--paper); font-family:'Space Grotesk',sans-serif;
+    font-weight:600; font-size:14.5px; cursor:pointer; transition:background .15s;
+  }
+  .btn:hover{background:var(--coral); border-color:var(--coral);}
+  .toggle-row{text-align:center; margin-top:16px; font-size:13.5px; color:var(--muted);}
+  .toggle-row button{background:none; border:none; color:var(--coral); font-weight:600; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:13.5px;}
+  .auth-error{
+    background:#fdeeec; border:1px solid var(--danger); color:var(--danger);
+    font-size:13px; padding:10px 12px; border-radius:8px; margin-bottom:14px;
+  }
+  .divider{display:flex; align-items:center; gap:10px; margin:18px 0; font-size:12.5px; color:var(--muted);}
+  .divider::before, .divider::after{content:''; flex:1; height:1px; background:var(--line);}
+  .btn-google{
+    width:100%; padding:11px; border-radius:8px; border:1.5px solid var(--line); background:var(--panel);
+    color:var(--ink); font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;
+    display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer; transition:border-color .15s, background .15s;
+  }
+  .btn-google:hover{border-color:var(--ink); background:#fbf9f4;}
 
-  /* AUTH */
-  #auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--ink); }
-  .auth-box { background: var(--card); border-radius: 16px; padding: 48px; width: 100%; max-width: 420px; box-shadow: 0 24px 64px rgba(0,0,0,0.3); }
-  .auth-logo { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
-  .auth-logo span { color: var(--coral); }
-  .auth-subtitle { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
-  .auth-tabs { display: flex; background: var(--paper); border-radius: 8px; padding: 4px; margin-bottom: 24px; gap: 4px; }
-  .auth-tab { flex: 1; padding: 8px; border: none; background: transparent; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--muted); transition: all 0.2s; }
-  .auth-tab.active { background: var(--card); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  .form-group { margin-bottom: 16px; }
-  .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
-  .form-group input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: 'Inter', sans-serif; background: var(--paper); color: var(--ink); outline: none; transition: border-color 0.2s; }
-  .form-group input:focus { border-color: var(--coral); }
-  .btn-primary { width: 100%; padding: 12px; background: var(--coral); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-  .auth-error { background: #fdecea; color: var(--danger); padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+  /* ---------------- APP SHELL ---------------- */
+  #appScreen{display:flex; min-height:100vh;}
+  .sidebar{
+    width:230px; flex-shrink:0; background:var(--ink); color:var(--paper);
+    padding:24px 18px; display:flex; flex-direction:column;
+  }
+  .sidebar .login-logo{color:var(--paper); margin-bottom:32px;}
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px;
+    font-size:14px; color:#bdbcb3; cursor:pointer; margin-bottom:2px; font-weight:500;
+  }
+  .nav-item .dot{width:6px; height:6px; border-radius:50%; background:#56554c; flex-shrink:0;}
+  .nav-item:hover{background:#21242b; color:var(--paper);}
+  .nav-item.active{background:var(--coral); color:#fff;}
+  .nav-item.active .dot{background:#fff;}
+  .sidebar-foot{margin-top:auto; padding-top:18px; border-top:1px solid #2a2d35;}
+  .user-chip{font-size:13px; color:#a8a79e; margin-bottom:10px; word-break:break-all;}
+  .logout-btn{
+    width:100%; padding:9px; border-radius:8px; border:1px solid #3a3d44; background:none;
+    color:#bdbcb3; font-size:13px; cursor:pointer; font-family:'Space Grotesk',sans-serif;
+  }
+  .logout-btn:hover{border-color:var(--coral); color:var(--coral);}
 
-  /* LAYOUT */
-  #app-screen { display: none; }
-  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; background: var(--ink); padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; }
-  .sidebar-logo { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: white; padding: 8px 12px 24px; }
-  .sidebar-logo span { color: var(--coral); }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: rgba(255,255,255,0.6); cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; border: none; background: none; width: 100%; text-align: left; }
-  .nav-item:hover { background: rgba(255,255,255,0.08); color: white; }
-  .nav-item.active { background: var(--coral); color: white; }
-  .sidebar-bottom { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; }
-  .user-badge { display: flex; align-items: center; gap: 10px; padding: 8px 12px; color: rgba(255,255,255,0.7); font-size: 13px; }
-  .user-avatar { width: 28px; height: 28px; background: var(--coral); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600; flex-shrink: 0; }
-  .main-content { margin-left: 220px; padding: 32px; min-height: 100vh; }
-  .page { display: none; }
-  .page.active { display: block; }
-  .page-header { margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; }
-  .page-title { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; }
-  .page-subtitle { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .main{flex:1; padding:32px 40px; max-width:1100px;}
+  .topbar{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:28px; flex-wrap:wrap; gap:12px;}
+  .topbar h1{font-family:'Fraunces',serif; font-size:26px; font-weight:600;}
+  .topbar p{color:var(--muted); font-size:13.5px; margin-top:4px;}
+  .refresh-btn{
+    padding:9px 16px; border-radius:8px; border:1.5px solid var(--ink); background:var(--panel);
+    font-size:13.5px; font-weight:600; cursor:pointer; font-family:'Space Grotesk',sans-serif;
+  }
+  .refresh-btn:hover{background:var(--ink); color:var(--paper);}
 
-  /* STATS */
-  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
-  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-  .stat-label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-  .stat-value { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 700; line-height: 1; }
-  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .view{display:none;}
+  .view.active{display:block;}
 
-  /* CARD */
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
-  .card-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  /* Stat cards */
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:32px;}
+  .stat-card{background:var(--panel); border:1.5px solid var(--line); border-radius:12px; padding:18px 20px;}
+  .stat-card .label{font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); display:block; margin-bottom:8px;}
+  .stat-card .num{font-family:'Fraunces',serif; font-size:30px; font-weight:600;}
 
-  /* TABLE */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th { text-align: left; padding: 10px 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); border-bottom: 1px solid var(--border); }
-  td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--paper); }
+  .panel-block{background:var(--panel); border:1.5px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:24px;}
+  .panel-block-head{padding:16px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
+  .panel-block-head h3{font-size:15px; font-weight:600; font-family:'Space Grotesk',sans-serif;}
 
-  /* BADGES */
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-  .badge-green { background: #d4f5e5; color: #1a7a4a; }
-  .badge-coral { background: #fde8e4; color: var(--coral); }
-  .badge-mint  { background: #d4f0ed; color: #1a7a72; }
-  .badge-gray  { background: #ebebeb; color: #666; }
+  /* Stores list */
+  .store-row{
+    display:flex; align-items:center; justify-content:space-between; padding:14px 20px;
+    border-bottom:1px solid var(--line); font-size:14px;
+  }
+  .store-row:last-child{border-bottom:none;}
+  .store-info{display:flex; align-items:center; gap:12px;}
+  .platform-badge{
+    font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase;
+    padding:4px 9px; border-radius:999px; background:var(--mint-bg); color:var(--mint); font-weight:600;
+  }
+  .store-url{font-weight:600;}
+  .status-pill{font-size:12px; padding:4px 10px; border-radius:999px; font-weight:600;}
+  .status-pill.connected{background:var(--mint-bg); color:var(--mint);}
+  .status-pill.pending{background:#fdf2e3; color:#a3711a;}
+  .sync-btn{
+    padding:7px 14px; border-radius:7px; border:1.5px solid var(--ink); background:none;
+    font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Space Grotesk',sans-serif; margin-left:10px;
+  }
+  .sync-btn:hover{background:var(--ink); color:var(--paper);}
 
-  /* STORES */
-  .stores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-  .store-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; align-items: flex-start; gap: 14px; }
-  .store-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-  .store-icon.shopify { background: #d4edda; }
-  .store-info { flex: 1; }
-  .store-name { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
-  .store-url { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  /* Products table */
+  table{width:100%; border-collapse:collapse; font-size:14px;}
+  thead th{
+    text-align:left; font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:.04em; color:var(--muted); padding:12px 20px; border-bottom:1px solid var(--line);
+    background:#fbf9f4;
+  }
+  tbody td{padding:13px 20px; border-bottom:1px solid var(--line);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#fbf9f4;}
+  .prod-title{font-weight:600;}
+  .qty-pill{font-family:'JetBrains Mono',monospace; font-size:12px; padding:3px 9px; border-radius:999px; background:var(--mint-bg); color:var(--mint); font-weight:600;}
+  .qty-pill.low{background:#fdeeec; color:var(--danger);}
 
-  /* EMPTY */
-  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
-  .empty-icon { font-size: 40px; margin-bottom: 12px; }
-  .empty-title { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .empty-state{padding:48px 20px; text-align:center; color:var(--muted); font-size:14px;}
+  .empty-state strong{display:block; font-family:'Fraunces',serif; font-size:18px; color:var(--ink); margin-bottom:6px; font-weight:600;}
 
-  /* BUTTONS */
-  .btn-sm { padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; font-family: 'Inter', sans-serif; transition: opacity 0.2s; }
-  .btn-sm:hover { opacity: 0.85; }
-  .btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-coral { background: var(--coral); color: white; }
-  .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--ink); }
+  .connect-form{display:flex; gap:10px; padding:16px 20px; border-bottom:1px solid var(--line); flex-wrap:wrap;}
+  .connect-form input{
+    flex:1; min-width:200px; padding:9px 12px; border:1.5px solid var(--line); border-radius:8px;
+    font-family:'Space Grotesk',sans-serif; font-size:13.5px; background:var(--paper); color:var(--ink);
+  }
+  .connect-form button{
+    padding:9px 16px; border-radius:8px; border:1.5px solid var(--ink); background:var(--ink);
+    color:var(--paper); font-weight:600; font-size:13.5px; cursor:pointer; font-family:'Space Grotesk',sans-serif;
+  }
+  .connect-form button:hover{background:var(--coral); border-color:var(--coral);}
 
-  /* LOADER */
-  .loader { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast{
+    position:fixed; bottom:24px; right:24px; background:var(--ink); color:var(--paper);
+    padding:13px 20px; border-radius:10px; font-size:13.5px; font-weight:500; z-index:100;
+    box-shadow:0 8px 24px rgba(0,0,0,.18); transform:translateY(20px); opacity:0; transition:all .25s;
+  }
+  .toast.show{transform:translateY(0); opacity:1;}
 
-  /* TOAST */
-  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; opacity: 0; transform: translateY(10px); transition: all 0.3s; z-index: 999; pointer-events: none; }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.success { background: #1a7a4a; }
-  .toast.error { background: var(--danger); }
-
-  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  @media (max-width:860px){
+    #appScreen{flex-direction:column;}
+    .sidebar{width:100%; flex-direction:row; align-items:center; padding:14px 18px;}
+    .sidebar .login-logo{margin-bottom:0;}
+    .nav-item{padding:8px 10px;}
+    .sidebar-foot{display:none;}
+    .main{padding:22px 18px;}
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    table{font-size:13px;}
+    thead th, tbody td{padding:10px 12px;}
+  }
 </style>
 </head>
 <body>
 
-<!-- AUTH -->
-<div id="auth-screen">
-  <div class="auth-box">
-    <div class="auth-logo">Synk<span>ly</span></div>
-    <div class="auth-subtitle">TikTok Shop ↔ eCommerce Sync Platform</div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')">Login</button>
-      <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
-    </div>
-    <div id="auth-error" class="auth-error"></div>
+<!-- ============ LOGIN / SIGNUP SCREEN ============ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo"><div class="logo-mark"><span></span><span></span></div>Synkly</div>
+    <p class="sub" id="authSubtitle">Log in to view your synced stores.</p>
 
-    <div id="login-form">
-      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com" /></div>
-      <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()" /></div>
-      <button class="btn-primary" onclick="handleLogin()" id="login-btn">Login</button>
-    </div>
+    <div id="authError" class="auth-error hidden"></div>
 
-    <div id="signup-form" style="display:none">
-      <div class="form-group"><label>Full Name</label><input type="text" id="signup-name" placeholder="Ali Khan" /></div>
-      <div class="form-group"><label>Email</label><input type="email" id="signup-email" placeholder="you@example.com" /></div>
-      <div class="form-group"><label>Password</label><input type="password" id="signup-password" placeholder="••••••••" /></div>
-      <button class="btn-primary" onclick="handleSignup()" id="signup-btn">Create Account</button>
+    <form id="authForm">
+      <div class="field" id="nameField" style="display:none;">
+        <label>Full name</label>
+        <input type="text" id="nameInput" placeholder="Wajad" />
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="emailInput" placeholder="you@example.com" required />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="passwordInput" placeholder="••••••••" required />
+      </div>
+      <button type="submit" class="btn" id="authSubmitBtn">Log in</button>
+    </form>
+
+    <div class="divider"><span>or</span></div>
+
+    <button id="googleLoginBtn" class="btn-google" type="button">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.3 1 7.3 2.7l6-6C34.1 6.5 29.3 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5 43.5 34.8 43.5 24c0-1.2-.1-2.4-.3-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 18.9 13 24 13c2.8 0 5.3 1 7.3 2.7l6-6C34.1 6.5 29.3 4.5 24 4.5c-7.7 0-14.4 4.4-17.7 10.2z"/><path fill="#4CAF50" d="M24 43.5c5.2 0 9.9-1.9 13.5-5.1l-6.2-5.3C29.4 34.6 26.8 35.5 24 35.5c-5.3 0-9.7-2.6-11.4-7l-6.6 5.1C8.9 39.4 15.9 43.5 24 43.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.3 4-4.2 5.3l6.2 5.3C40.5 36 43.5 30.4 43.5 24c0-1.2-.1-2.4-.3-3.5z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="toggle-row">
+      <span id="toggleText">Don't have an account?</span>
+      <button id="toggleAuthMode" type="button">Sign up</button>
     </div>
   </div>
 </div>
 
-<!-- APP -->
-<div id="app-screen">
-  <nav class="sidebar">
-    <div class="sidebar-logo">Synk<span>ly</span></div>
-    <button class="nav-item active" onclick="showPage('overview')" id="nav-overview"><span>📊</span> Overview</button>
-    <button class="nav-item" onclick="showPage('stores')" id="nav-stores"><span>🏪</span> Stores</button>
-    <button class="nav-item" onclick="showPage('products')" id="nav-products"><span>📦</span> Products</button>
-    <button class="nav-item" onclick="showPage('sync')" id="nav-sync"><span>🔄</span> Sync Logs</button>
-    <div class="sidebar-bottom">
-      <div class="user-badge">
-        <div class="user-avatar" id="user-avatar">W</div>
-        <div>
-          <div id="user-name" style="font-size:13px;color:white;font-weight:500">Loading...</div>
-          <div id="user-plan" style="font-size:11px;color:rgba(255,255,255,0.4)">Free Plan</div>
-        </div>
-      </div>
-      <button class="nav-item" onclick="handleLogout()"><span>🚪</span> Logout</button>
-    </div>
-  </nav>
+<!-- ============ MAIN APP ============ -->
+<div id="appScreen" class="hidden">
+  <aside class="sidebar">
+    <div class="login-logo"><div class="logo-mark"><span></span><span></span></div>Synkly</div>
 
-  <main class="main-content">
+    <div class="nav-item active" data-view="overview"><span class="dot"></span>Overview</div>
+    <div class="nav-item" data-view="stores"><span class="dot"></span>Stores</div>
+    <div class="nav-item" data-view="products"><span class="dot"></span>Products</div>
+
+    <div class="sidebar-foot">
+      <div class="user-chip" id="userChip">—</div>
+      <button class="logout-btn" id="logoutBtn">Log out</button>
+    </div>
+  </aside>
+
+  <main class="main">
 
     <!-- OVERVIEW -->
-    <div class="page active" id="page-overview">
-      <div class="page-header">
+    <div class="view active" id="view-overview">
+      <div class="topbar">
         <div>
-          <div class="page-title">Overview</div>
-          <div class="page-subtitle">Your sync status at a glance</div>
+          <h1>Overview</h1>
+          <p>A snapshot of everything Synkly is keeping in sync.</p>
         </div>
+        <button class="refresh-btn" onclick="loadAll()">Refresh data</button>
       </div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Connected Stores</div>
-          <div class="stat-value" id="stat-stores">—</div>
-          <div class="stat-sub"><span class="dot" style="background:var(--success)"></span>Active</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Synced Products</div>
-          <div class="stat-value" id="stat-products">—</div>
-          <div class="stat-sub">In database</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">TikTok Listings</div>
-          <div class="stat-value">0</div>
-          <div class="stat-sub">Coming in Phase 3</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Orders Synced</div>
-          <div class="stat-value">0</div>
-          <div class="stat-sub">Coming in Phase 3</div>
-        </div>
+
+      <div class="stat-grid">
+        <div class="stat-card"><span class="label">Connected stores</span><div class="num" id="statStores">0</div></div>
+        <div class="stat-card"><span class="label">Synced products</span><div class="num" id="statProducts">0</div></div>
+        <div class="stat-card"><span class="label">Low stock items</span><div class="num" id="statLowStock">0</div></div>
+        <div class="stat-card"><span class="label">Total stock units</span><div class="num" id="statUnits">0</div></div>
       </div>
-      <div class="card">
-        <div class="card-title">Connected Stores</div>
-        <div id="overview-stores-list"><div style="color:var(--muted);font-size:14px">Loading...</div></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Quick Actions</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <button class="btn-sm btn-coral" onclick="showPage('stores')">+ Connect Store</button>
-          <button class="btn-sm btn-outline" onclick="quickSync()">🔄 Sync Products</button>
-          <button class="btn-sm btn-outline" onclick="showPage('products')">📦 View Products</button>
-        </div>
+
+      <div class="panel-block">
+        <div class="panel-block-head"><h3>Recently synced products</h3></div>
+        <table>
+          <thead><tr><th>Product</th><th>SKU</th><th>Price</th><th>Stock</th></tr></thead>
+          <tbody id="recentProductsBody"></tbody>
+        </table>
       </div>
     </div>
 
     <!-- STORES -->
-    <div class="page" id="page-stores">
-      <div class="page-header">
+    <div class="view" id="view-stores">
+      <div class="topbar">
         <div>
-          <div class="page-title">Stores</div>
-          <div class="page-subtitle">Manage connected eCommerce stores</div>
+          <h1>Stores</h1>
+          <p>Connect a storefront and pull its catalog into Synkly.</p>
         </div>
-        <button class="btn-sm btn-coral" onclick="connectShopify()">+ Connect Shopify</button>
+        <button class="refresh-btn" onclick="loadStores()">Refresh</button>
       </div>
-      <div id="stores-grid" class="stores-grid"></div>
+
+      <div class="panel-block">
+        <div class="panel-block-head"><h3>Connect a Shopify store</h3></div>
+        <div class="connect-form">
+          <input type="text" id="shopUrlInput" placeholder="yourstore.myshopify.com" />
+          <button onclick="connectShopify()">Connect</button>
+        </div>
+        <div id="storesBody"></div>
+      </div>
     </div>
 
     <!-- PRODUCTS -->
-    <div class="page" id="page-products">
-      <div class="page-header">
+    <div class="view" id="view-products">
+      <div class="topbar">
         <div>
-          <div class="page-title">Products</div>
-          <div class="page-subtitle">All products synced from your stores</div>
+          <h1>Products</h1>
+          <p>Everything Synkly has pulled in from your connected stores.</p>
         </div>
-        <button class="btn-sm btn-coral" onclick="syncProducts()" id="sync-btn">🔄 Sync Now</button>
+        <button class="refresh-btn" onclick="loadProducts()">Refresh</button>
       </div>
-      <div class="card">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Platform</th>
-                <th>Store</th>
-                <th>Shopify ID</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="products-table">
-              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:28px">Loading...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
-    <!-- SYNC LOGS -->
-    <div class="page" id="page-sync">
-      <div class="page-header"><div><div class="page-title">Sync Logs</div><div class="page-subtitle">History of sync operations</div></div></div>
-      <div class="card">
-        <div class="empty-state">
-          <div class="empty-icon">📋</div>
-          <div class="empty-title">No logs yet</div>
-          <div style="font-size:14px;color:var(--muted)">Sync karo — logs yahan dikhenge</div>
-        </div>
+      <div class="panel-block">
+        <table>
+          <thead><tr><th>Product</th><th>SKU</th><th>Price</th><th>Stock</th><th>Last synced</th></tr></thead>
+          <tbody id="productsBody"></tbody>
+        </table>
       </div>
     </div>
 
@@ -270,206 +312,242 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const API = 'https://synkly-production.up.railway.app';
-  let token = localStorage.getItem('synkly_token');
+  const API_BASE = "http://localhost:8000";
+  let authMode = "login";
+  let token = localStorage.getItem("synkly_token") || null;
   let currentUser = null;
+  let allProducts = [];
+  let allStores = [];
 
-  window.onload = () => { token ? initApp() : null; };
-
-  // AUTH
-  function switchTab(tab) {
-    document.querySelectorAll('.auth-tab').forEach((t, i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='signup')));
-    document.getElementById('login-form').style.display = tab==='login'?'block':'none';
-    document.getElementById('signup-form').style.display = tab==='signup'?'block':'none';
-    document.getElementById('auth-error').style.display = 'none';
+  function showToast(msg){
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(()=> t.classList.remove("show"), 2800);
   }
 
-  async function handleLogin() {
-    const email = document.getElementById('login-email').value.trim();
-    const pass = document.getElementById('login-password').value;
-    if (!email || !pass) return showAuthError('Email aur password zaroori hain');
-    const btn = document.getElementById('login-btn');
-    btn.disabled = true; btn.innerHTML = '<span class="loader"></span>Logging in...';
-    try {
-      const res = await fetch(`${API}/auth/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass}) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Login failed');
-      token = data.access_token;
-      localStorage.setItem('synkly_token', token);
-      initApp();
-    } catch(e) { showAuthError(e.message); btn.disabled=false; btn.textContent='Login'; }
-  }
+  document.getElementById("toggleAuthMode").addEventListener("click", () => {
+    authMode = authMode === "login" ? "signup" : "login";
+    const isSignup = authMode === "signup";
+    document.getElementById("nameField").style.display = isSignup ? "block" : "none";
+    document.getElementById("authSubtitle").textContent = isSignup
+      ? "Create an account to start syncing stores."
+      : "Log in to view your synced stores.";
+    document.getElementById("authSubmitBtn").textContent = isSignup ? "Create account" : "Log in";
+    document.getElementById("toggleText").textContent = isSignup ? "Already have an account?" : "Don't have an account?";
+    document.getElementById("toggleAuthMode").textContent = isSignup ? "Log in" : "Sign up";
+    document.getElementById("authError").classList.add("hidden");
+  });
 
-  async function handleSignup() {
-    const full_name = document.getElementById('signup-name').value.trim();
-    const email = document.getElementById('signup-email').value.trim();
-    const password = document.getElementById('signup-password').value;
-    if (!full_name||!email||!password) return showAuthError('Sab fields fill karo');
-    const btn = document.getElementById('signup-btn');
-    btn.disabled=true; btn.innerHTML='<span class="loader"></span>Creating...';
-    try {
-      const res = await fetch(`${API}/auth/signup`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password,full_name}) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail||'Signup failed');
-      showToast('Account ban gaya! Ab login karo.','success');
-      switchTab('login');
-      document.getElementById('login-email').value = email;
-    } catch(e) { showAuthError(e.message); }
-    finally { btn.disabled=false; btn.textContent='Create Account'; }
-  }
+  document.getElementById("authForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("emailInput").value;
+    const password = document.getElementById("passwordInput").value;
+    const fullName = document.getElementById("nameInput").value;
+    const errBox = document.getElementById("authError");
+    errBox.classList.add("hidden");
 
-  function showAuthError(msg) {
-    const el = document.getElementById('auth-error');
-    el.textContent = msg; el.style.display='block';
-  }
+    try{
+      if(authMode === "signup"){
+        const res = await fetch(`${API_BASE}/auth/signup`, {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({email, password, full_name: fullName})
+        });
+        if(!res.ok){
+          const err = await res.json();
+          throw new Error(err.detail || "Signup failed");
+        }
+        await doLogin(email, password);
+      } else {
+        await doLogin(email, password);
+      }
+    } catch(err){
+      errBox.textContent = err.message;
+      errBox.classList.remove("hidden");
+    }
+  });
 
-  function handleLogout() {
-    token=null; localStorage.removeItem('synkly_token');
-    document.getElementById('auth-screen').style.display='flex';
-    document.getElementById('app-screen').style.display='none';
-  }
-
-  // INIT
-  async function initApp() {
-    try {
-      const res = await apiFetch('/auth/me');
-      currentUser = res;
-      document.getElementById('auth-screen').style.display='none';
-      document.getElementById('app-screen').style.display='block';
-      document.getElementById('user-name').textContent = res.full_name||res.email;
-      document.getElementById('user-plan').textContent = (res.plan||'free')[0].toUpperCase()+(res.plan||'free').slice(1)+' Plan';
-      document.getElementById('user-avatar').textContent = (res.full_name||res.email)[0].toUpperCase();
-      loadOverview();
-    } catch { token=null; localStorage.removeItem('synkly_token'); }
-  }
-
-  async function apiFetch(path, opts={}) {
-    const res = await fetch(`${API}${path}`, { ...opts, headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`,...(opts.headers||{})} });
+  async function doLogin(email, password){
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({email, password})
+    });
+    if(!res.ok){
+      const err = await res.json();
+      throw new Error(err.detail || "Login failed — check your email and password");
+    }
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail||'API Error');
-    return data;
+    token = data.access_token;
+    localStorage.setItem("synkly_token", token);
+    await enterApp();
   }
 
-  // NAVIGATION
-  function showPage(name) {
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    document.getElementById(`page-${name}`).classList.add('active');
-    document.getElementById(`nav-${name}`).classList.add('active');
-    if (name==='stores') loadStores();
-    if (name==='products') loadProducts();
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    token = null;
+    localStorage.removeItem("synkly_token");
+    document.getElementById("appScreen").classList.add("hidden");
+    document.getElementById("loginScreen").classList.remove("hidden");
+  });
+
+  document.querySelectorAll(".nav-item").forEach(item => {
+    item.addEventListener("click", () => {
+      document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
+      const viewName = item.dataset.view;
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.getElementById(`view-${viewName}`).classList.add("active");
+    });
+  });
+
+  async function apiGet(path){
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    if(res.status === 401) throw new Error("Session expired, please log in again");
+    if(!res.ok) throw new Error("Request failed: " + path);
+    return res.json();
   }
 
-  // OVERVIEW
-  async function loadOverview() {
-    try {
-      const stores = await apiFetch('/stores/');
-      document.getElementById('stat-stores').textContent = stores.length;
-      const el = document.getElementById('overview-stores-list');
-      if (!stores.length) {
-        el.innerHTML = `<div class="empty-state" style="padding:20px 0"><div class="empty-icon">🏪</div><div class="empty-title">Koi store connected nahi</div><div style="font-size:13px;color:var(--muted)">Stores tab pe jao aur Shopify connect karo</div></div>`;
-        document.getElementById('stat-products').textContent = '0';
-        return;
-      }
-      el.innerHTML = stores.map(s=>`
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div style="width:36px;height:36px;background:#d4edda;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px">🛍️</div>
-          <div>
-            <div style="font-weight:600;font-size:14px">${s.shop_url}</div>
-            <div style="font-size:12px;color:var(--muted)">Shopify · Connected ${new Date(s.created_at).toLocaleDateString()}</div>
-          </div>
-          <span class="badge badge-green" style="margin-left:auto">Active</span>
+  async function enterApp(){
+    try{
+      currentUser = await apiGet("/auth/me");
+    } catch(err){
+      document.getElementById("appScreen").classList.add("hidden");
+      document.getElementById("loginScreen").classList.remove("hidden");
+      return;
+    }
+    document.getElementById("userChip").textContent = currentUser.email;
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("appScreen").classList.remove("hidden");
+    await loadAll();
+  }
+
+  async function loadStores(){
+    try{
+      allStores = await apiGet("/stores/");
+      renderStores();
+    } catch(err){ showToast(err.message); }
+  }
+
+  function loadProducts(){
+    renderProducts();
+  }
+
+  async function loadAll(){
+    await loadStores();
+    renderOverview();
+  }
+
+  function renderStores(){
+    const body = document.getElementById("storesBody");
+    if(allStores.length === 0){
+      body.innerHTML = `<div class="empty-state"><strong>No stores connected yet</strong>Connect your Shopify store above to start syncing products.</div>`;
+      return;
+    }
+    body.innerHTML = allStores.map(s => `
+      <div class="store-row">
+        <div class="store-info">
+          <span class="platform-badge">${s.platform}</span>
+          <span class="store-url">${s.shop_url || "—"}</span>
         </div>
-      `).join('');
-      // Get product count
-      try {
-        const pres = await apiFetch(`/shopify/products/${stores[0].id}`);
-        document.getElementById('stat-products').textContent = pres.total_fetched || '18';
-      } catch {
-        document.getElementById('stat-products').textContent = '18';
-      }
-    } catch(e) { console.error(e); }
-  }
-
-  // STORES
-  async function loadStores() {
-    const grid = document.getElementById('stores-grid');
-    grid.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:20px">Loading...</div>';
-    try {
-      const stores = await apiFetch('/stores/');
-      if (!stores.length) {
-        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🏪</div><div class="empty-title">Koi store connected nahi</div><div style="font-size:14px;color:var(--muted)">Upar button se Shopify connect karo</div></div>`;
-        return;
-      }
-      grid.innerHTML = stores.map(s=>`
-        <div class="store-card">
-          <div class="store-icon shopify">🛍️</div>
-          <div class="store-info">
-            <div class="store-name">${s.shop_url}</div>
-            <div class="store-url">Shopify · ID: ${s.id}</div>
-            <span class="badge badge-green">Connected</span>
-          </div>
+        <div>
+          <span class="status-pill ${s.is_connected ? "connected" : "pending"}">${s.is_connected ? "Connected" : "Pending"}</span>
+          <button class="sync-btn" onclick="syncStoreProducts(${s.id})">Sync products</button>
         </div>
-      `).join('');
-    } catch(e) { grid.innerHTML = `<div style="color:var(--danger);padding:20px;font-size:14px">Error: ${e.message}</div>`; }
+      </div>
+    `).join("");
   }
 
-  function connectShopify() {
-    const shop = prompt('Apne Shopify store ka URL daalo:\n(jaise: testing-my-web.myshopify.com)');
-    if (!shop) return;
-    const userId = currentUser?.id || 2;
-    window.open(`${API}/shopify/install?shop=${shop.trim()}&user_id=${userId}`, '_blank');
-    showToast('Shopify OAuth window khul raha hai...', 'success');
-    setTimeout(loadStores, 4000);
+  async function syncStoreProducts(storeId){
+    try{
+      showToast("Syncing products…");
+      const result = await apiGet(`/shopify/products/${storeId}`);
+      showToast(result.message || "Synced");
+      renderOverview();
+      renderProducts();
+    } catch(err){
+      showToast(err.message);
+    }
   }
 
-  // PRODUCTS
-  async function loadProducts() {
-    const tbody = document.getElementById('products-table');
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:28px">Loading...</td></tr>';
-    try {
-      const stores = await apiFetch('/stores/');
-      if (!stores.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:28px">Pehle koi store connect karo</td></tr>';
-        return;
-      }
-      // Show synced store info since product list endpoint may need to be added
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:28px">
-        <div style="color:var(--muted);font-size:14px;margin-bottom:12px">Store connected hai: <strong>${stores[0].shop_url}</strong></div>
-        <div style="color:var(--muted);font-size:13px">Products database mein save hain — "Sync Now" dabao latest fetch ke liye</div>
-      </td></tr>`;
-    } catch(e) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:28px">Error: ${e.message}</td></tr>`; }
+  function renderOverview(){
+    document.getElementById("statStores").textContent = allStores.length;
+    document.getElementById("statProducts").textContent = allProducts.length;
+    const low = allProducts.filter(p => (p.quantity ?? 0) < 5).length;
+    document.getElementById("statLowStock").textContent = low;
+    const units = allProducts.reduce((sum,p) => sum + (p.quantity || 0), 0);
+    document.getElementById("statUnits").textContent = units;
+
+    const body = document.getElementById("recentProductsBody");
+    if(allProducts.length === 0){
+      body.innerHTML = `<tr><td colspan="4" class="empty-state">No products synced yet — connect a store and hit "Sync products".</td></tr>`;
+      return;
+    }
+    body.innerHTML = allProducts.slice(0,6).map(p => productRow(p,false)).join("");
   }
 
-  async function syncProducts() {
-    const btn = document.getElementById('sync-btn');
-    btn.disabled=true; btn.innerHTML='<span class="loader"></span>Syncing...';
-    try {
-      const stores = await apiFetch('/stores/');
-      if (!stores.length) { showToast('Pehle store connect karo','error'); return; }
-      const res = await apiFetch(`/shopify/products/${stores[0].id}`);
-      showToast(res.message || 'Sync complete!', 'success');
-      loadProducts(); loadOverview();
-    } catch(e) { showToast('Sync failed: '+e.message,'error'); }
-    finally { btn.disabled=false; btn.textContent='🔄 Sync Now'; }
+  function renderProducts(){
+    const body = document.getElementById("productsBody");
+    if(allProducts.length === 0){
+      body.innerHTML = `<tr><td colspan="5" class="empty-state"><strong>No products yet</strong>Go to Stores and click "Sync products" on a connected store.</td></tr>`;
+      return;
+    }
+    body.innerHTML = allProducts.map(p => productRow(p, true)).join("");
   }
 
-  async function quickSync() {
-    try {
-      const stores = await apiFetch('/stores/');
-      if (!stores.length) { showToast('Pehle store connect karo','error'); return; }
-      const res = await apiFetch(`/shopify/products/${stores[0].id}`);
-      showToast(res.message||'Sync complete!','success');
-      loadOverview();
-    } catch(e) { showToast('Sync failed: '+e.message,'error'); }
+  function productRow(p, withSync){
+    const low = (p.quantity ?? 0) < 5;
+    return `
+      <tr>
+        <td class="prod-title">${p.title}</td>
+        <td>${p.sku || "—"}</td>
+        <td>${p.price ? "$" + Number(p.price).toFixed(2) : "—"}</td>
+        <td><span class="qty-pill ${low ? "low" : ""}">${p.quantity ?? 0} left</span></td>
+        ${withSync ? `<td>${p.last_synced ? new Date(p.last_synced).toLocaleString() : "Just now"}</td>` : ""}
+      </tr>
+    `;
   }
 
-  // TOAST
-  function showToast(msg, type='') {
-    const t = document.getElementById('toast');
-    t.textContent=msg; t.className=`toast ${type} show`;
-    setTimeout(()=>t.classList.remove('show'),3000);
+  async function connectShopify(){
+    const shop = document.getElementById("shopUrlInput").value.trim();
+    if(!shop.endsWith(".myshopify.com")){
+      showToast("Enter a shop like yourstore.myshopify.com");
+      return;
+    }
+    try{
+      const data = await apiGet(`/shopify/install?shop=${encodeURIComponent(shop)}&user_id=${currentUser.id}`);
+      window.open(data.install_url, "_blank");
+      showToast("Complete the install in the new tab, then refresh stores here.");
+    } catch(err){
+      showToast(err.message);
+    }
+  }
+
+  // ---------- GOOGLE LOGIN ----------
+  document.getElementById("googleLoginBtn").addEventListener("click", () => {
+    window.location.href = `${API_BASE}/auth/google/login`;
+  });
+
+  // Jab Google se wapas redirect ho ke aate hain, token URL mein milta hai (?token=...)
+  function checkGoogleRedirect(){
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get("token");
+    if(urlToken){
+      token = urlToken;
+      localStorage.setItem("synkly_token", token);
+      // URL ko clean kar do taake token address bar mein na rahe
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+
+  checkGoogleRedirect();
+
+  if(token){
+    enterApp();
   }
 </script>
+
 </body>
 </html>
